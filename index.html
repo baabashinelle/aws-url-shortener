@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Baaba's URL Shortener</title>
+  <style>
+    :root {
+      --bg-start: #111827;
+      --bg-end: #1f2937;
+      --card: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 25%),
+                  linear-gradient(180deg, var(--bg-start), var(--bg-end));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .page {
+      width: min(560px, 100%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.45);
+      padding: 36px;
+      backdrop-filter: blur(18px);
+    }
+
+    .header {
+      margin: 0 0 24px;
+      font-size: clamp(2rem, 4vw, 2.4rem);
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 0 0 30px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .field {
+      display: grid;
+      gap: 18px;
+    }
+
+    input {
+      width: 100%;
+      padding: 18px 20px;
+      font-size: 1rem;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 16px;
+      outline: none;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    input:focus {
+      border-color: rgba(96, 165, 250, 0.9);
+      transform: translateY(-1px);
+    }
+
+    button {
+      padding: 16px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      background: #000000;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    button:hover {
+      background: #111111;
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(0, 0, 0, 0.25);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    #result {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    button:disabled {
+      background: #1f2937;
+      cursor: default;
+      opacity: 0.75;
+      transform: none;
+      box-shadow: none;
+    }
+
+    a {
+      color: #7dd3fc;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(125, 211, 252, 0.5);
+    }
+
+    a:hover {
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1 class="header">Baaba's URL Shortener</h1>
+    <p class="subtitle">Create a clean short link in seconds. Paste a long URL below and tap the button to generate your short URL.</p>
+
+    <div class="field">
+      <input type="text" id="url-input" placeholder="Paste a long URL here..." />
+      <button onclick="shorten()">Shorten</button>
+    </div>
+
+    <div id="result"></div>
+  </main>
+
+  <script>
+    const API = "https://uifkph841f.execute-api.eu-north-1.amazonaws.com";
+
+    async function shorten() {
+      const longUrl = document.getElementById("url-input").value;
+      const button = document.querySelector('button[onclick="shorten()"]');
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = 'Shortening...';
+
+      try {
+        const res = await fetch(API + "/shorten", {
+          method: "POST",
+          body: JSON.stringify({ long_url: longUrl })
+        });
+        const data = await res.json();
+        const short = API + "/" + data.short_code;
+        document.getElementById("result").innerHTML =
+          `Short URL: <a href="${short}" target="_blank">${short}</a>`;
+      } catch (err) {
+        document.getElementById("result").textContent = 'Unable to shorten the URL. Please try again.';
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+  </script>
+</body>
+</html>
